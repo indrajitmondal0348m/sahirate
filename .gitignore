@@ -1,9 +1,18 @@
 # Dependencies
 node_modules/
+venv/
+.venv/
 
 # Build output
 dist/
 dist-ssr/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
 
 # Environment files
 .env
