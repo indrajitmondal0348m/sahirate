@@ -29,6 +29,8 @@ export const bn = {
       "updated_today": "Reference rate • Updated today",
       "material_spec": "Material Specification",
       "recoverable": "Recoverable Components",
+      "login_to_sell": "রিসাইক্লারকে এই উপাদান বিক্রি করতে সংগ্রাহক হিসেবে লগইন করুন",
+      "sell_to_recycler": "রিসাইক্লারকে এই উপাদান বিক্রি করুন",
       "check_another": "Check Another Scrap",
       "view_rates": "View Market Rates"
     },
@@ -159,7 +161,11 @@ export const bn = {
       "low_confidence": "Low Confidence",
       "try_again": "Try Again",
       "choose_manually": "Choose Material Manually",
-      "skip_ai": "Skip AI Check"
+      "skip_ai": "Skip AI Check",
+      "capture": "ছবি",
+      "identify": "শনাক্ত",
+      "weight": "ওজন",
+      "slip": "স্লিপ"
     },
     "earnings": {
       "title": "My Earnings",

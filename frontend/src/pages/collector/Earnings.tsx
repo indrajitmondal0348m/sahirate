@@ -1,14 +1,19 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/dexie";
 import { useTranslation } from "@/i18n";
+import { pullRemoteData } from "@/services/syncManager";
 
-export default function Earnings() { const { t } = useTranslation();
+export default function Earnings() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    pullRemoteData();
+  }, []);
 
   const lots = useLiveQuery(() => db.lots.orderBy("created_at_local").reverse().toArray(), []) || [];
   const handovers = useLiveQuery(() => db.handovers.toArray(), []) || [];

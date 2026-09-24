@@ -29,6 +29,8 @@ export const hi = {
       "updated_today": "संदर्भ दर • आज अपडेट किया गया",
       "material_spec": "सामग्री विवरण",
       "recoverable": "पुनर्प्राप्त करने योग्य घटक",
+      "login_to_sell": "रीसाइक्लर को यह सामग्री बेचने के लिए कलेक्टर लॉगिन करें",
+      "sell_to_recycler": "रीसाइक्लर को यह सामग्री बेचें",
       "check_another": "अन्य कबाड़ जाँचें",
       "view_rates": "बाज़ार के दाम देखें"
     },
@@ -162,6 +164,7 @@ export const hi = {
       "skip_ai": "AI जाँच छोड़ें",
       "capture": "कैप्चर",
       "identify": "पहचान",
+      "weight": "वजन",
       "slip": "पर्ची"
     },
     "earnings": {

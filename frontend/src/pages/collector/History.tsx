@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Clock, Inbox, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/dexie";
 import { useTranslation } from "@/i18n";
+import { pullRemoteData } from "@/services/syncManager";
 
-
-export default function History() { const { t } = useTranslation();
+export default function History() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "COMPLETED" | "PAID">("ALL");
+
+  useEffect(() => {
+    pullRemoteData();
+  }, []);
 
   const lots = useLiveQuery(() => db.lots.orderBy("created_at_local").reverse().toArray(), []) || [];
   const handovers = useLiveQuery(() => db.handovers.toArray(), []) || [];
@@ -96,9 +101,14 @@ export default function History() { const { t } = useTranslation();
                   <div className="flex border-b border-dashed border-[#CBC5B4]">
                     <div className="p-4 flex-1">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-extrabold text-charcoal text-lg">
-                          {t(`material.${lot.payload.material_id}` as any) || lot.payload.material_id}
-                        </h3>
+                        <div>
+                          <h3 className="font-extrabold text-charcoal text-lg">
+                            {t(`material.${lot.payload.material_id}` as any) || lot.payload.material_id}
+                          </h3>
+                          <span className="inline-block mt-0.5 font-mono text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                            {lot.id}
+                          </span>
+                        </div>
                         <span className="font-extrabold text-charcoal text-lg font-mono">
                           ₹{displayAmount}
                         </span>

@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { db } from "../db/dexie";
 import type { Lot, LotPayload, OutboxEvent } from "../types";
 import { processOutbox } from "./syncManager";
+import { useSyncStore } from "../stores/syncStore";
 
 /**
  * Creates a lot entirely offline and queues it in the outbox for synchronization.
@@ -48,8 +49,8 @@ export async function createLocalLot(
     await db.outbox.add(outboxEvent);
   });
 
-  // Trigger auto-sync if currently online
-  if (typeof navigator !== "undefined" && navigator.onLine) {
+  // Trigger auto-sync ONLY if currently online (and not in simulated offline mode)
+  if (typeof navigator !== "undefined" && navigator.onLine && useSyncStore.getState().isOnline) {
     // Fire and forget to avoid blocking the UI response
     processOutbox().catch(console.error);
   }

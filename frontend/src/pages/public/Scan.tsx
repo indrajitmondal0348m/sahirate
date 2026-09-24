@@ -4,12 +4,17 @@ import { classifyMaterial } from "@/services/ai/inference";
 import type { MaterialClassificationResult } from "@/services/ai/inference";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, RotateCcw, AlertTriangle, ArrowRight, ShieldCheck, Tag, ArrowLeft, Calculator, Plus, Minus, Edit3, Check, RotateCw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Camera, RotateCcw, AlertTriangle, ArrowRight, ShieldCheck, Tag, ArrowLeft, Calculator, Plus, Minus, Edit3, Check, RotateCw, Sparkles, Leaf, Layers, Atom, LogIn } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { DEMO_REF_RATES, getDemoRefRate } from "@/services/refRates";
+import { calculateCriticalMinerals } from "@/utils/criticalMinerals";
+import { useCollectorAuthStore } from "@/stores/authStore";
+import { useCreateLotStore } from "@/stores/createLotStore";
 
 export default function Scan() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useCollectorAuthStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MaterialClassificationResult | null>(null);
@@ -94,6 +99,9 @@ export default function Scan() {
   const estimatedTotal = Math.round(calcQty * rateMid);
   const minTotal = Math.round(calcQty * rateMin);
   const maxTotal = Math.round(calcQty * rateMax);
+
+  const effectiveWeightKg = isPiece ? Math.max(calcQty * 2.2, 0.5) : calcQty;
+  const mineralRecovery = calculateCriticalMinerals(activeMaterialId || "PCB", effectiveWeightKg);
 
   return (
     <div className="flex-1 flex flex-col px-4 py-6">
@@ -504,18 +512,68 @@ export default function Scan() {
                     </div>
                   </div>
 
-                  {/* Details Divider */}
-                  <div className="border-t-2 border-dashed border-warm-borders-dark pt-5 space-y-3">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      {t("public.result.material_spec")}
-                    </p>
-                    <div className="bg-white p-4 rounded-xl border border-warm-borders shadow-sm text-sm text-charcoal">
-                      <p className="font-bold mb-2 text-primary">{t("public.result.recoverable")}</p>
-                      <ul className="list-disc list-inside text-muted-foreground font-medium space-y-1.5">
-                        <li>Standard components</li>
-                        <li>Trace metals</li>
-                        <li>Recyclable housing</li>
-                      </ul>
+                  {/* Extractable Critical Materials & Minerals Section (Certified Recovery Protocol) */}
+                  <div className="border-t-2 border-dashed border-warm-borders-dark pt-5 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Atom className="w-4 h-4 text-primary" />
+                        <h3 className="text-xs font-extrabold text-charcoal uppercase tracking-wider">
+                          Extractable Materials & Minerals
+                        </h3>
+                      </div>
+                      <span className="text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Certified Recovery Protocol
+                      </span>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-warm-borders shadow-xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-warm-borders/60 pb-2">
+                        <span className="text-xs font-extrabold text-charcoal flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 text-copper" />
+                          {mineralRecovery.headline}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-muted-foreground">
+                          Est. for {calcQty} {unitLabel}
+                        </span>
+                      </div>
+
+                      {/* Recoverable Minerals Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        {mineralRecovery.minerals.map((m, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-2.5 rounded-xl border flex items-start gap-2.5 transition-all ${m.color}`}
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-white/90 border border-black/10 flex items-center justify-center font-black text-xs font-mono shrink-0 shadow-2xs">
+                              {m.symbol}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline justify-between gap-1">
+                                <span className="font-extrabold text-xs truncate">
+                                  {m.name}
+                                </span>
+                                <span className="font-mono font-black text-xs shrink-0">
+                                  {m.amountFormatted}
+                                </span>
+                              </div>
+                              <p className="text-[10px] font-medium leading-tight opacity-90 mt-0.5">
+                                {m.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Environmental Hazard Mitigated */}
+                      <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3 flex items-start gap-2.5 mt-2 text-emerald-950">
+                        <Leaf className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <div className="text-[11px] leading-relaxed">
+                          <strong className="font-extrabold text-emerald-900 block text-xs mb-0.5">
+                            Environmental Hazard Avoided:
+                          </strong>
+                          <span>{mineralRecovery.hazardAvoided}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -523,14 +581,73 @@ export default function Scan() {
 
               {/* Actions */}
               <div className="flex flex-col gap-3">
-                <Button size="lg" className="w-full text-lg h-14 bg-charcoal hover:bg-black text-white rounded-xl flex gap-2 active:scale-[0.98] transition-transform" onClick={retry}>
-                  <RotateCcw className="w-5 h-5" />
-                  {t("public.result.check_another")}
+                {!isAuthenticated ? (
+                  <Button
+                    size="lg"
+                    className="w-full text-sm sm:text-base min-h-[3.5rem] py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-transform text-center whitespace-normal leading-snug"
+                    onClick={() => {
+                      navigate("/collector/login", {
+                        state: {
+                          returnTo: "/collector/create-lot",
+                          lotItem: {
+                            material_id: activeMaterialId || "PCB",
+                            label: materialDisplayName,
+                            weight_or_count: calcQty,
+                            unit: refRate?.unit || "kg",
+                            unitLabel: unitLabel,
+                            estimated_value: estimatedTotal,
+                            confidence: result?.confidence || 0.95,
+                          }
+                        }
+                      });
+                    }}
+                  >
+                    <LogIn className="w-5 h-5 shrink-0" />
+                    <span>{t("public.result.login_to_sell")}</span>
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full text-base h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-transform"
+                    onClick={() => {
+                      const lotStore = useCreateLotStore.getState();
+                      lotStore.reset();
+                      lotStore.initDraft();
+                      lotStore.addItem({
+                        material_id: activeMaterialId || "PCB",
+                        label: materialDisplayName,
+                        weight_or_count: calcQty,
+                        unit: refRate?.unit || "kg",
+                        unitLabel: unitLabel,
+                        estimated_value: estimatedTotal,
+                        confidence: result?.confidence || 0.95,
+                      });
+                      lotStore.setStep("confirm");
+                      navigate("/collector/create-lot");
+                    }}
+                  >
+                    <Sparkles className="w-5 h-5 shrink-0" />
+                    <span>{t("public.result.sell_to_recycler")}</span>
+                  </Button>
+                )}
+
+                <Button
+                  size="lg"
+                  className="w-full text-base h-14 bg-charcoal hover:bg-black text-white rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  onClick={retry}
+                >
+                  <RotateCcw className="w-5 h-5 shrink-0" />
+                  <span>{t("public.result.check_another")}</span>
                 </Button>
-                <Link to="/rates">
-                  <Button size="lg" variant="outline" className="w-full text-lg h-14 border-2 border-warm-borders bg-surface text-charcoal hover:bg-warm-borders/40 rounded-xl flex gap-2 active:scale-[0.98] transition-transform">
-                    <ArrowRight className="w-5 h-5 text-copper" />
-                    {t("public.result.view_rates")}
+
+                <Link to="/rates" className="w-full">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full text-base h-14 border-2 border-warm-borders bg-surface text-charcoal hover:bg-warm-borders/40 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  >
+                    <ArrowRight className="w-4 h-4 text-copper shrink-0" />
+                    <span>{t("public.result.view_rates")}</span>
                   </Button>
                 </Link>
               </div>

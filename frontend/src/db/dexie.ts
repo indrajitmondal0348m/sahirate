@@ -33,6 +33,17 @@ class SahiRateDatabase extends Dexie {
       handovers: 'id, lot_id, qr_reference, status',
       payments: 'id, handover_id, status'
     });
+
+    this.version(3).stores({
+      lots: 'id, sync_status, status, created_at_local',
+      photos: 'id, lot_id',
+      outbox: 'id, sync_status, type, created_at_local',
+      price_cache: 'material_id',
+      recycler_cache: 'recycler_id',
+      sync_metadata: 'key',
+      handovers: 'id, lot_id, qr_reference, status',
+      payments: 'id, handover_id, status'
+    });
   }
 }
 

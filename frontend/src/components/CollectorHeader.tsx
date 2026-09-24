@@ -15,31 +15,32 @@ export default function CollectorHeader() {
   ) || 0;
 
   return (
-    <header className="flex justify-between items-center px-3 h-14 bg-background shrink-0 sticky top-0 z-10 border-b border-warm-borders/50">
+    <header className="flex justify-between items-center px-4 h-15 backdrop-blur-xl bg-[#FAF9F5]/90 shrink-0 sticky top-0 z-30 border-b border-stone-200/60 shadow-sm shadow-black/[0.02]">
       
       {/* LOGO */}
-      <Link to="/collector" className="flex items-center">
-        <span className="font-extrabold text-xl tracking-tight leading-none" style={{ color: "#174C4A" }}>Sahi</span>
-        <span className="font-extrabold text-xl tracking-tight leading-none" style={{ color: "#C56A3D" }}>Rate</span>
+      <Link to="/collector" className="flex items-center gap-1">
+        <span className="font-black text-2xl tracking-tight leading-none" style={{ color: "#174C4A" }}>Sahi</span>
+        <span className="font-black text-2xl tracking-tight leading-none" style={{ color: "#C56A3D" }}>Rate</span>
+        <span className="ml-1 text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded">TWA</span>
       </Link>
 
-      <div className="flex items-center gap-1 sm:gap-2">
-        {/* SYNC STATUS */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* SYNC STATUS PILL */}
         <div className="text-[9px] font-bold uppercase tracking-widest flex items-center">
           {isSyncing ? (
-            <span className="text-primary flex items-center gap-0.5 bg-primary/10 px-1 py-0.5 rounded">
+            <span className="text-primary flex items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-1 rounded-full">
               <RefreshCw className="w-3 h-3 animate-spin" /> SYNCING
             </span>
           ) : !isOnline ? (
-            <span className="text-muted-foreground flex items-center gap-0.5 bg-surface px-1 py-0.5 rounded border border-warm-borders">
+            <span className="text-stone-500 flex items-center gap-1 bg-stone-100 px-2 py-1 rounded-full border border-stone-200">
               <CloudOff className="w-3 h-3" /> OFFLINE
             </span>
           ) : pendingCount > 0 ? (
-            <span className="text-amber-600 flex items-center gap-0.5 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
-              <AlertTriangle className="w-3 h-3" /> {pendingCount}
+            <span className="text-amber-700 flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full border border-amber-200 animate-pulse">
+              <AlertTriangle className="w-3 h-3" /> {pendingCount} PENDING
             </span>
           ) : (
-            <span className="text-success flex items-center gap-0.5 bg-success/10 px-1 py-0.5 rounded">
+            <span className="text-emerald-700 flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
               <Check className="w-3 h-3" /> SYNCED
             </span>
           )}

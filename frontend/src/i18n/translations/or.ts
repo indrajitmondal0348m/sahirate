@@ -29,6 +29,8 @@ export const or = {
       "updated_today": "ସନ୍ଦର୍ଭ ଦର • ଆଜି ଅପଡେଟ୍ ହୋଇଛି",
       "material_spec": "ସାମଗ୍ରୀ ବିବରଣୀ",
       "recoverable": "ପୁନରୁଦ୍ଧାର ଯୋଗ୍ୟ ଉପାଦାନ",
+      "login_to_sell": "ରିସାଇକ୍ଲରଙ୍କୁ ଏହି ସାମଗ୍ରୀ ବିକ୍ରୟ କରିବାକୁ କଲେକ୍ଟର ଭାବରେ ଲଗଇନ୍ କରନ୍ତୁ",
+      "sell_to_recycler": "ରିସାଇକ୍ଲରଙ୍କୁ ଏହି ସାମଗ୍ରୀ ବିକ୍ରୟ କରନ୍ତୁ",
       "check_another": "ଅନ୍ୟ ସ୍କ୍ରାପ୍ ଯାଞ୍ଚ କରନ୍ତୁ",
       "view_rates": "ବଜାର ଦର ଦେଖନ୍ତୁ"
     },
@@ -159,7 +161,11 @@ export const or = {
       "low_confidence": "Low Confidence",
       "try_again": "Try Again",
       "choose_manually": "Choose Material Manually",
-      "skip_ai": "Skip AI Check"
+      "skip_ai": "Skip AI Check",
+      "capture": "ଫଟୋ",
+      "identify": "ଚିହ୍ନଟ",
+      "weight": "ଓଜନ",
+      "slip": "ରସିଦ"
     },
     "earnings": {
       "title": "My Earnings",

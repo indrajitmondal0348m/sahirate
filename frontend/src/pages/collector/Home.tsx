@@ -1,33 +1,70 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Camera, FileText, QrCode, ShieldAlert, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Camera, FileText, ShieldAlert, ArrowRight, Sparkles, TrendingUp, MapPin, User } from "lucide-react";
 import { useCreateLotStore } from "@/stores/createLotStore";
 import { db } from "@/db/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "@/i18n";
+import { useCollectorAuthStore } from "@/stores/authStore";
+import SyncNetworkBar from "@/components/SyncNetworkBar";
+import { pullRemoteData } from "@/services/syncManager";
 
 export default function CollectorHome() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  const { user } = useCollectorAuthStore();
+
+  useEffect(() => {
+    // Automatically pull all latest cloud lots and handovers into Dexie IndexedDB
+    // so mobile phones and desktop browsers stay continuously in sync
+    pullRemoteData();
+  }, []);
 
   const lots = useLiveQuery(() => db.lots.orderBy("created_at_local").reverse().toArray(), []) || [];
   
-  // Calculate today's summary
+  // Calculate today's summary safely
   const today = new Date().toDateString();
-  const todayLots = lots.filter(l => new Date(l.created_at_local).toDateString() === today);
+  const todayLots = lots.filter(l => {
+    try {
+      const d = new Date(l.created_at_local);
+      return !isNaN(d.getTime()) && d.toDateString() === today;
+    } catch {
+      return false;
+    }
+  });
+
   const todayWeight = todayLots.reduce((sum, l) => sum + (l.payload.approx_weight_kg || 0), 0);
   const todayValue = todayLots.reduce((sum, l) => sum + (l.payload.estimated_value || 0), 0);
 
-  const recentLots = lots.slice(0, 2); // Show top 2
+  const recentLots = lots.slice(0, 3); // Show top recent lots
 
   return (
-    <div className="flex flex-col min-h-screen p-4 pb-20 space-y-6 bg-background animate-in fade-in">
+    <div className="flex flex-col min-h-screen p-4 pb-20 space-y-5 animate-in fade-in">
       
-      <div className="pt-2">
-        <h1 className="text-2xl font-extrabold text-charcoal mb-1">
-          {t("common.good_morning") || "Good morning,"}
-        </h1>
-        <p className="text-muted-foreground font-medium">{t("collector.home.ready_to_collect") || "Ready to collect scrap?"}</p>
+      {/* Network & Sync Control Bar (Offline / Online Switch to FastAPI) */}
+      <SyncNetworkBar />
+
+      {/* Welcome & Collector Profile Header */}
+      <div className="pt-1 flex items-start justify-between">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider mb-1.5">
+            <Sparkles className="w-3 h-3" /> Field Collection Terminal
+          </div>
+          <h1 className="text-2xl font-black text-charcoal tracking-tight">
+            {user?.full_name ? user.full_name : (t("common.good_morning") || "Good morning,")}
+          </h1>
+          <p className="text-xs text-muted-foreground font-semibold flex items-center gap-1 mt-0.5">
+            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>{user?.location ? user.location : "Ward 14, Nagpur"}</span>
+          </p>
+        </div>
+
+        <Link
+          to="/collector/login"
+          className="text-[11px] font-bold text-muted-foreground hover:text-charcoal bg-white border border-[#DDD8CC] px-2.5 py-1 rounded-xl shadow-2xs flex items-center gap-1 mt-1 shrink-0"
+        >
+          <User className="w-3 h-3 text-primary" />
+          {user ? "Account" : "Login"}
+        </Link>
       </div>
 
       {/* NEW SCRAP COLLECTION - Dominant CTA */}
@@ -46,81 +83,136 @@ export default function CollectorHome() {
             useCreateLotStore.getState().reset();
           }}
         >
-          <Button
-            size="lg"
-            className="w-full h-[120px] text-xl bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-lg shadow-primary/20 flex flex-col items-center justify-center gap-3 border-none"
-          >
-            <Camera className="w-10 h-10" />
-            <span className="font-bold tracking-wide uppercase">{t("collector.home.new_collection")}</span>
-          </Button>
+          <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-primary to-[#0f3836] text-white shadow-xl shadow-primary/20 flex items-center justify-between group">
+            {/* Soft background glow */}
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+
+            <div className="space-y-1 relative z-10">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-200">
+                Offline AI Scanning
+              </span>
+              <h2 className="text-xl font-black tracking-tight">
+                {t("collector.home.new_collection") || "New Collection"}
+              </h2>
+              <p className="text-xs text-white/80 font-medium">Capture photo, identify scrap, get fair price</p>
+            </div>
+
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Camera className="w-7 h-7 text-white" />
+            </div>
+          </div>
         </Link>
       </section>
 
-      {/* TODAY'S SUMMARY */}
-      <section>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+      {/* TODAY'S SUMMARY - Glass Card */}
+      <section className="space-y-2">
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
           {t("collector.home.today_summary") || "TODAY'S COLLECTION"}
         </p>
-        <Card className="border-t-[3px] border-t-charcoal border-x-0 border-b-0 bg-[#FDFCF8] rounded-none shadow-none">
-          <CardContent className="p-4 flex items-center justify-between border border-[#E8E4D9] border-t-0">
+        <div className="backdrop-blur-md bg-white/85 border border-stone-200/80 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-2xl font-extrabold text-charcoal tabular-nums font-mono tracking-tight">{todayWeight.toFixed(1)} kg</p>
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{todayLots.length} {todayLots.length === 1 ? 'collection' : 'collections'}</p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Volume Today</span>
+              <p className="text-2xl font-black text-charcoal tabular-nums font-mono mt-0.5">
+                {todayWeight.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">kg</span>
+              </p>
+              <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">
+                {todayLots.length} {todayLots.length === 1 ? 'collection' : 'collections'}
+              </p>
             </div>
+
             <div className="text-right">
-              <p className="text-2xl font-extrabold text-primary tabular-nums font-mono tracking-tight">₹{todayValue.toLocaleString()}</p>
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Reference estimate</p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Estimated Payout</span>
+              <p className="text-2xl font-black text-primary tabular-nums font-mono mt-0.5">
+                ₹{todayValue.toLocaleString()}
+              </p>
+              <p className="text-[10px] font-semibold text-emerald-700 mt-0.5 flex items-center justify-end gap-0.5">
+                <TrendingUp className="w-3 h-3" /> Live benchmark
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
-      {/* RECENT COLLECTIONS */}
+      {/* RECENT COLLECTIONS - Glass List */}
       {recentLots.length > 0 && (
-        <section>
-          <div className="flex justify-between items-end mb-2 px-1">
+        <section className="space-y-2">
+          <div className="flex justify-between items-center px-1">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               {t("collector.home.recent") || "RECENT COLLECTIONS"}
             </p>
-            <Link to="/collector/history" className="text-xs font-bold text-primary hover:underline flex items-center">
-              {t("collector.home.view_all") || "View all"} <ArrowRight className="w-3 h-3 ml-1" />
+            <Link to="/collector/history" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+              {t("collector.home.view_all") || "View all"} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="space-y-3">
-            {recentLots.map(lot => (
-              <Card key={lot.id} className="border-t-2 border-t-warm-borders border-x-0 border-b-0 bg-white rounded-none shadow-none">
-                <CardContent className="p-3 flex justify-between items-center bg-[#FDFCF8] border border-[#E8E4D9] border-dashed">
-                  <div>
-                    <h3 className="font-extrabold text-charcoal text-[15px] uppercase tracking-tight">
-                      {t(`material.${lot.payload.material_id}` as any) || lot.payload.material_id}
-                    </h3>
-                    <p className="text-sm text-muted-foreground font-semibold">{lot.payload.approx_weight_kg} kg</p>
+
+          <div className="space-y-2.5">
+            {recentLots.map((lot) => {
+              const displayTitle =
+                lot.payload.items && lot.payload.items.length > 0
+                  ? lot.payload.items.map((it: any) => it.material_id || it.material || "Item").join(" + ")
+                  : t(`material.${lot.payload.material_id}` as any) || lot.payload.material_id || "Scrap Lot";
+
+              return (
+                <Link
+                  key={lot.id}
+                  to={`/collector/history/${lot.id}`}
+                  className="block backdrop-blur-md bg-white/85 border border-stone-200/70 p-4 rounded-2xl shadow-sm hover:border-primary/50 active:scale-[0.99] transition-all cursor-pointer group"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-extrabold text-charcoal text-sm uppercase tracking-tight group-hover:text-primary transition-colors">
+                        {displayTitle}
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-semibold">
+                        {lot.payload.approx_weight_kg} kg • <span className="text-[10px] font-mono text-stone-400">#{lot.id.slice(0, 8)}</span>
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-black text-charcoal text-base font-mono">
+                        ₹{(lot.payload.asking_price || lot.payload.estimated_value || 0).toLocaleString()}
+                      </p>
+                      <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                        lot.sync_status === "synced"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}>
+                        {lot.sync_status === "synced" ? "Synced" : "Local DB"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-extrabold text-charcoal text-base font-mono">₹{lot.payload.estimated_value?.toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{lot.sync_status}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* SAFETY */}
-      <section>
-        <Link to="/collector/safety" className="block w-full active:scale-[0.98] transition-transform">
-          <Card className="border-l-[6px] border-l-amber-500 bg-[#FFFDF7] rounded-r-xl rounded-l-none shadow-sm border-y border-r border-[#E8E4D9]">
-            <CardContent className="flex items-start p-4 gap-3">
-              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-extrabold text-charcoal block mb-1 tracking-tight">{t("collector.home.safety")}</span>
-                <span className="text-sm text-muted-foreground font-semibold leading-tight block">
-                  Remove batteries and outer casing before handling. Keep dry.
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+      {/* QUICK SHORTCUTS - 3 Cards */}
+      <section className="grid grid-cols-3 gap-2.5 pt-1">
+        <Link to="/collector/price" className="block active:scale-[0.98] transition-transform">
+          <div className="backdrop-blur-md bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl shadow-sm hover:border-primary/40 transition-colors text-center">
+            <FileText className="w-5 h-5 text-primary mx-auto mb-1.5" />
+            <h4 className="font-extrabold text-[11px] text-charcoal leading-tight">Price Board</h4>
+            <p className="text-[9px] text-muted-foreground mt-0.5">Spoken Audio</p>
+          </div>
+        </Link>
+
+        <Link to="/collector/recyclers" className="block active:scale-[0.98] transition-transform">
+          <div className="backdrop-blur-md bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl shadow-sm hover:border-primary/40 transition-colors text-center">
+            <MapPin className="w-5 h-5 text-emerald-600 mx-auto mb-1.5" />
+            <h4 className="font-extrabold text-[11px] text-charcoal leading-tight">Recyclers</h4>
+            <p className="text-[9px] text-muted-foreground mt-0.5">Nearby Yards</p>
+          </div>
+        </Link>
+
+        <Link to="/collector/safety" className="block active:scale-[0.98] transition-transform">
+          <div className="backdrop-blur-md bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl shadow-sm hover:border-primary/40 transition-colors text-center">
+            <ShieldAlert className="w-5 h-5 text-copper mx-auto mb-1.5" />
+            <h4 className="font-extrabold text-[11px] text-charcoal leading-tight">Safety Guide</h4>
+            <p className="text-[9px] text-muted-foreground mt-0.5">PPE Protocol</p>
+          </div>
         </Link>
       </section>
 

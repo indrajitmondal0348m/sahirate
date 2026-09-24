@@ -16,11 +16,18 @@ export default function ScanHandover() { const { t } = useTranslation();
 
   const handleScanSuccess = async (text: string) => {
     try {
-      const payload = JSON.parse(text);
-      if (payload.type === "SAHIRATE_HANDOVER" && payload.handover_id) {
-        navigate(`/collector/handover/${payload.handover_id}`);
+      let targetId: string | null = null;
+      try {
+        const payload = JSON.parse(text);
+        targetId = payload.handover_id || payload.lot_id || payload.id || payload.qr_ref;
+      } catch {
+        targetId = text.trim();
+      }
+
+      if (targetId) {
+        navigate(`/collector/handover/${targetId}`);
       } else {
-        setError(t("collector.scan_handover.invalid_qr") || "Invalid QR Code format.");
+        setError(t("collector.scan_handover.invalid_qr") || "Could not read settlement code from QR.");
       }
     } catch {
       setError(t("collector.scan_handover.invalid_qr") || "Invalid QR Code format.");
@@ -29,12 +36,30 @@ export default function ScanHandover() { const { t } = useTranslation();
 
   const handleManualSearch = async () => {
     if (!manualRef) return;
-    const handover = await db.handovers.where("qr_reference").equals(manualRef.toUpperCase()).first();
-    if (handover) {
-      navigate(`/collector/handover/${handover.id}`);
-    } else {
-      setError("No handover found with that reference.");
+    const clean = manualRef.trim().toUpperCase();
+    
+    // 1. Check local Dexie
+    const local = await db.handovers
+      .filter((h) => h.qr_reference?.toUpperCase() === clean || h.id?.toUpperCase() === clean || h.lot_id?.toUpperCase() === clean)
+      .first();
+    if (local) {
+      navigate(`/collector/handover/${local.id}`);
+      return;
     }
+
+    // 2. Fetch from backend API
+    try {
+      const res = await fetch(`/api/v1/handovers/${clean}`);
+      if (res.ok) {
+        const remote = await res.json();
+        navigate(`/collector/handover/${remote.id}`);
+        return;
+      }
+    } catch (e) {
+      console.warn("Online handover search failed:", e);
+    }
+
+    setError(`No settlement session found with reference "${clean}". Please verify the code on the recycler screen.`);
   };
 
   return (

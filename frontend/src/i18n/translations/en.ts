@@ -29,6 +29,8 @@ export const en = {
       "updated_today": "Reference rate • Updated today",
       "material_spec": "Material Specification",
       "recoverable": "Recoverable Components",
+      "login_to_sell": "Login as Collector to Sell this Material to Recycler",
+      "sell_to_recycler": "Sell this Material to Recycler",
       "check_another": "Check Another Scrap",
       "view_rates": "View Market Rates"
     },

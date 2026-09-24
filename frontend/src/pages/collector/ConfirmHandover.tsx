@@ -10,16 +10,61 @@ import { collectorConfirmHandover } from "@/services/handovers";
 import { useTranslation } from "@/i18n";
 import { useAudio } from "@/hooks/useAudio";
 
-export default function ConfirmHandover() { const { t } = useTranslation(); const { playAudio } = useAudio();
+export default function ConfirmHandover() {
+  const { t } = useTranslation();
+  const { playAudio } = useAudio();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [networkLoading, setNetworkLoading] = useState(false);
 
   const handover = useLiveQuery(() => (id ? db.handovers.get(id) : undefined), [id]);
   const lot = useLiveQuery(() => (handover ? db.lots.get(handover.lot_id) : undefined), [handover]);
   const payment = useLiveQuery(() => (id ? db.payments.where('handover_id').equals(id).first() : undefined), [id]);
 
-  if (handover === undefined || (handover && lot === undefined)) {
+  useEffect(() => {
+    if (!id) return;
+    const fetchOnline = async () => {
+      const localH = await db.handovers.get(id);
+      if (!localH) {
+        setNetworkLoading(true);
+        try {
+          const res = await fetch(`/api/v1/handovers/${id}`);
+          if (res.ok) {
+            const data = await res.json();
+            await db.handovers.put(data);
+            if (data.lot_id) {
+              const lotRes = await fetch(`/api/v1/lots/${data.lot_id}`);
+              if (lotRes.ok) {
+                const lotData = await lotRes.json();
+                await db.lots.put(lotData);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch handover from server:", e);
+        } finally {
+          setNetworkLoading(false);
+        }
+      } else if (localH.lot_id) {
+        const localL = await db.lots.get(localH.lot_id);
+        if (!localL) {
+          try {
+            const lotRes = await fetch(`/api/v1/lots/${localH.lot_id}`);
+            if (lotRes.ok) {
+              const lotData = await lotRes.json();
+              await db.lots.put(lotData);
+            }
+          } catch (e) {
+            console.warn("Could not fetch lot from server:", e);
+          }
+        }
+      }
+    };
+    fetchOnline();
+  }, [id]);
+
+  if (networkLoading || handover === undefined || (handover && lot === undefined)) {
     return <div className="p-8 text-center text-muted-foreground">{t("common.loading")}</div>;
   }
 
@@ -33,7 +78,6 @@ export default function ConfirmHandover() { const { t } = useTranslation(); cons
   }
 
   const isConfirmed = handover.status !== "QR_GENERATED" && handover.status !== "VERIFIED";
-
 
   const handleConfirm = async () => {
     if (!id || isSubmitting) return;

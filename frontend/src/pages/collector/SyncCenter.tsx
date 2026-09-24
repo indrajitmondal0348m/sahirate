@@ -1,16 +1,22 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, RefreshCw, AlertTriangle, CheckCircle2, Clock, Bug, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/db/dexie";
-import { processOutbox } from "@/services/syncManager";
+import { syncAll } from "@/services/syncManager";
 import { useSyncStore } from "@/stores/syncStore";
 import { useTranslation } from "@/i18n";
 
-export default function SyncCenter() { const { t } = useTranslation();
+export default function SyncCenter() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isSyncing, isOnline, failNextSync, setFailNextSync } = useSyncStore();
+  const { isSyncing, isOnline, failNextSync, setFailNextSync, setOnline } = useSyncStore();
+
+  useEffect(() => {
+    syncAll();
+  }, []);
 
   const outboxEvents = useLiveQuery(() => db.outbox.orderBy('created_at_local').reverse().toArray(), []) || [];
   
@@ -29,31 +35,63 @@ export default function SyncCenter() { const { t } = useTranslation();
         <h1 className="text-2xl font-extrabold text-charcoal tracking-tight">{t("collector.sync_center.title") || "Sync Center"}</h1>
       </header>
 
-      <Card className={`border shadow-sm rounded-2xl ${isOnline ? 'bg-surface border-warm-borders' : 'bg-red-50 border-red-200'}`}>
+      <Card className={`border shadow-sm rounded-2xl ${isOnline ? 'bg-surface border-warm-borders' : 'bg-amber-50/80 border-amber-300'}`}>
         <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-4">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isOnline ? 'bg-primary/10 text-primary' : 'bg-red-100 text-red-600'}`}>
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isOnline ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-700'}`}>
             {isOnline ? <Wifi className="w-8 h-8" /> : <WifiOff className="w-8 h-8" />}
           </div>
           <div>
             <h2 className="font-extrabold text-charcoal text-lg">
-              {isOnline ? t("common.online") : t("common.offline")}
+              {isOnline ? "Online (FastAPI Central Connected)" : "Offline Mode (Local DB Active)"}
             </h2>
             <p className="text-sm font-medium text-muted-foreground mt-1">
               {isOnline 
-                ? (pendingCount > 0 ? `${pendingCount} ${t("collector.sync_center.sync_now")}` : t("collector.sync_center.all_synced"))
-                : t("collector.sync_center.offline_mode")}
+                ? (pendingCount > 0 ? `${pendingCount} item(s) pending sync to server` : "All local records synchronized with FastAPI")
+                : "Working entirely offline. Created lots are stored in Dexie and queued for upload."}
             </p>
           </div>
-          
-          <Button
-            size="lg"
-            className="w-full h-12 font-bold uppercase tracking-widest text-sm rounded-xl mt-2"
-            disabled={!isOnline || isSyncing || pendingCount === 0}
-            onClick={() => processOutbox()}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
-            {isSyncing ? t("collector.sync_center.syncing") || "SYNCING..." : t("collector.sync_center.sync_now") || "SYNC NOW"}
-          </Button>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-1">
+            <Button
+              size="lg"
+              className="h-12 font-bold uppercase tracking-wider text-xs rounded-xl bg-primary hover:bg-primary/90 text-white"
+              disabled={!isOnline || isSyncing}
+              onClick={() => syncAll()}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
+              {isSyncing ? "SYNCING..." : pendingCount > 0 ? `SYNC NOW (${pendingCount})` : "SYNC NOW"}
+            </Button>
+
+            <Button
+              size="lg"
+              variant={isOnline ? "outline" : "default"}
+              onClick={async () => {
+                if (isOnline) {
+                  setOnline(false);
+                } else {
+                  setOnline(true);
+                  await syncAll();
+                }
+              }}
+              className={`h-12 font-bold uppercase tracking-wider text-xs rounded-xl ${
+                isOnline
+                  ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
+              }`}
+            >
+              {isOnline ? (
+                <>
+                  <WifiOff className="w-4 h-4 mr-2" />
+                  Turn Sync OFF
+                </>
+              ) : (
+                <>
+                  <Wifi className="w-4 h-4 mr-2" />
+                  Turn Sync ON
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

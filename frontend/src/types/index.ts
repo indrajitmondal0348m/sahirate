@@ -1,9 +1,26 @@
 export type SyncStatus = "pending" | "syncing" | "synced" | "failed";
 
 export interface LotPayload {
+  collector_id?: string;
   material_id?: string;
   approx_weight_kg?: number;
   estimated_value?: number;
+  asking_price?: number;
+  estimated_min?: number;
+  estimated_max?: number;
+  items?: Array<{
+    material_id?: string;
+    material?: string;
+    label?: string;
+    weight_or_count?: number;
+    weight?: number;
+    unit?: string;
+    unitLabel?: string;
+    rate_min?: number;
+    rate_max?: number;
+    estimated_value?: number;
+  }>;
+  extra_data?: Record<string, any>;
   photo_reference?: string;
   latitude?: number;
   longitude?: number;
@@ -11,12 +28,14 @@ export interface LotPayload {
 
 export interface Lot {
   id: string; // client-generated-uuid
+  collector_id?: string;
   sync_status: SyncStatus;
   created_at_local: string; // ISO string
-  status?: "available" | "accepted";
+  status?: "available" | "accepted" | "offered" | "PRICE_OFFERED" | string;
   accepted_by?: string;
   accepted_at?: string;
   payload: LotPayload;
+  extra_data?: Record<string, any>;
   /** Recycler's confirmed material — may differ from AI prediction in payload.material_id */
   recycler_verified_material?: string;
   /** Recycler's weighed amount at yard — may differ from collector's approx_weight_kg */

@@ -3,9 +3,10 @@ import { useTranslation } from "@/i18n";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Info, ArrowLeft, Camera, Search, Sparkles } from "lucide-react";
+import { Info, ArrowLeft, Camera, Search, Sparkles, Atom, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DEMO_REF_RATES } from "@/services/refRates";
+import { calculateCriticalMinerals } from "@/utils/criticalMinerals";
 
 export default function Rates() {
   const { t } = useTranslation();
@@ -161,6 +162,38 @@ export default function Rates() {
                 </span>
               </div>
             </div>
+
+            {/* Extractable Strategic Minerals Pill Strip */}
+            {(() => {
+              const recovery = calculateCriticalMinerals(item.id, item.unit === "piece" ? 2.5 : 1);
+              return (
+                <div className="bg-[#FAF8F3] rounded-xl p-2.5 border border-[#ECE6DA] space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
+                    <span className="uppercase tracking-wider font-extrabold flex items-center gap-1 text-charcoal">
+                      <Atom className="w-3 h-3 text-primary" /> Extractable Minerals:
+                    </span>
+                    <span className="font-mono text-[9px] bg-white border border-[#ECE6DA] px-1.5 py-0.5 rounded font-bold text-muted-foreground">
+                      Yield per {item.unitLabel}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {recovery.minerals.map((m, idx) => (
+                      <div
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 bg-white border border-[#DDD8CC] px-2 py-1 rounded-lg text-[10px] font-bold shadow-2xs"
+                        title={m.description}
+                      >
+                        <span className="w-4 h-4 rounded bg-primary/10 text-primary flex items-center justify-center font-mono text-[9px] font-black">
+                          {m.symbol}
+                        </span>
+                        <span className="text-charcoal font-semibold">{m.name}</span>
+                        <span className="font-mono text-primary font-black ml-0.5">{m.amountFormatted}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Bottom Quick Action: Scan */}
             <div className="flex items-center justify-between pt-1">
