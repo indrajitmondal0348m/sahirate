@@ -37,3 +37,16 @@ Thumbs.db
 
 # Local caches
 .cache/
+
+# Private Deployment & Secrets Guides (visible only locally on developer machine)
+DEPLOYMENT_SECRETS_LOCAL.md
+*SECRETS_LOCAL*
+*.local.md
+
+# Cloud & Service Account Credentials
+*credential*.json
+*service-account*.json
+gcp-*.json
+*.pem
+*.key
+*.cert

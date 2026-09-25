@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { QRScanner } from "@/components/QRScanner";
 import { useTranslation } from "@/i18n";
 import { db } from "@/db/dexie";
+import { getApiUrl } from "@/config/api";
 
 export default function ScanHandover() { const { t } = useTranslation();
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export default function ScanHandover() { const { t } = useTranslation();
 
     // 2. Fetch from backend API
     try {
-      const res = await fetch(`/api/v1/handovers/${clean}`);
+      const res = await fetch(getApiUrl(`/handovers/${clean}`));
       if (res.ok) {
         const remote = await res.json();
         navigate(`/collector/handover/${remote.id}`);

@@ -13,7 +13,12 @@ import type {
   RecyclerRegisterData,
 } from "../types";
 
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || "/api/v1";
+const rawApiUrl = (import.meta as any).env?.VITE_API_URL?.trim();
+const BASE_URL = rawApiUrl
+  ? (rawApiUrl.endsWith("/api/v1")
+      ? rawApiUrl
+      : rawApiUrl.replace(/\/+$/, "") + (rawApiUrl.includes("/api/v1") ? "" : "/api/v1"))
+  : "/api/v1";
 
 export function getStoredToken(): string | null {
   return localStorage.getItem("sahirate_token");
@@ -40,7 +45,8 @@ export function logoutUser() {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${BASE_URL}${path}`;
+  const cleanPath = path.replace(/^\/?(api\/v1\/?)?/, "");
+  const url = `${BASE_URL}/${cleanPath}`;
   const token = getStoredToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

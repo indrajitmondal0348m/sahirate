@@ -1,0 +1,37 @@
+# Git & Version Control
+.git/
+.gitignore
+
+# Environment & Secrets (NEVER bake into container)
+.env
+.env.*
+*.pem
+*.key
+*.cert
+credentials.json
+*service-account*.json
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+
+# Databases & local state
+*.db
+*.sqlite3
+sahirate.db
+
+# Documentation & temporary scripts
+*.md
+generate_documents.py
+SahiRate_Master_Project_Manual.*

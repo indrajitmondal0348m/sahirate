@@ -1,0 +1,21 @@
+# Docker Compose configuration for local testing of SahiRate backend container
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sahirate-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=development
+      - SECRET_KEY=local-dev-secret-key-change-for-production-only
+      - DATABASE_URL=sqlite:///./data/sahirate.db
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174
+    volumes:
+      - sahirate_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  sahirate_data:

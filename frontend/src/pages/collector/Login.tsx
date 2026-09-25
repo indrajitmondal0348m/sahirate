@@ -7,6 +7,7 @@ import { useTranslation } from "@/i18n";
 import { useCollectorAuthStore } from "@/stores/authStore";
 import { useSyncStore } from "@/stores/syncStore";
 import { useCreateLotStore } from "@/stores/createLotStore";
+import { getApiUrl } from "@/config/api";
 
 export default function CollectorLogin() {
   const { t, language } = useTranslation();
@@ -46,7 +47,7 @@ export default function CollectorLogin() {
 
     try {
       // Attempt backend API login
-      const res = await fetch("/api/v1/auth/login", {
+      const res = await fetch(getApiUrl("/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

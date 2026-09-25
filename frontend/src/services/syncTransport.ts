@@ -1,20 +1,15 @@
 import type { OutboxEvent } from "@/types";
 import { useSyncStore } from "@/stores/syncStore";
+import { getApiUrl } from "@/config/api";
 
 export interface ISyncTransport {
   sendEvent(event: OutboxEvent): Promise<void>;
 }
 
 class HttpSyncTransport implements ISyncTransport {
-  private baseUrl: string;
-
-  constructor() {
-    // Allows configuring VITE_API_URL or defaults to proxied /api/v1
-    this.baseUrl = (import.meta as any).env?.VITE_API_URL || "/api/v1";
-  }
-
   async sendEvent(event: OutboxEvent): Promise<void> {
-    console.log(`[SyncTransport] Transmitting event ${event.type} (${event.id}) to ${this.baseUrl}/sync/events`);
+    const syncUrl = getApiUrl("/sync/events");
+    console.log(`[SyncTransport] Transmitting event ${event.type} (${event.id}) to ${syncUrl}`);
 
     const shouldFail = useSyncStore.getState().failNextSync;
     if (shouldFail) {
@@ -23,8 +18,9 @@ class HttpSyncTransport implements ISyncTransport {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/sync/events`, {
+      const response = await fetch(syncUrl, {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },

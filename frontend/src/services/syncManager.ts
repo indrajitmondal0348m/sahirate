@@ -2,6 +2,7 @@ import { db } from '@/db/dexie';
 import { syncTransport } from '@/services/syncTransport';
 import { useSyncStore } from '@/stores/syncStore';
 import type { Lot } from '@/types';
+import { getApiUrl } from '@/config/api';
 
 let isSyncManagerRunning = false;
 
@@ -101,7 +102,7 @@ export async function pullRemoteData(): Promise<void> {
 
   try {
     // 1. Pull Lots
-    const lotsRes = await fetch('/api/v1/lots');
+    const lotsRes = await fetch(getApiUrl('/lots'));
     if (lotsRes.ok) {
       const remoteLots: any[] = await lotsRes.json();
       if (Array.isArray(remoteLots) && remoteLots.length > 0) {
@@ -152,7 +153,7 @@ export async function pullRemoteData(): Promise<void> {
     }
 
     // 2. Pull Handovers
-    const handoversRes = await fetch('/api/v1/handovers');
+    const handoversRes = await fetch(getApiUrl('/handovers'));
     if (handoversRes.ok) {
       const remoteHandovers: any[] = await handoversRes.json();
       if (Array.isArray(remoteHandovers) && remoteHandovers.length > 0) {
@@ -166,7 +167,7 @@ export async function pullRemoteData(): Promise<void> {
     }
 
     // 3. Pull Payments
-    const paymentsRes = await fetch('/api/v1/payments');
+    const paymentsRes = await fetch(getApiUrl('/payments'));
     if (paymentsRes.ok) {
       const remotePayments: any[] = await paymentsRes.json();
       if (Array.isArray(remotePayments) && remotePayments.length > 0) {

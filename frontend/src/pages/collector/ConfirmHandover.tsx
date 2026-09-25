@@ -9,6 +9,7 @@ import { db } from "@/db/dexie";
 import { collectorConfirmHandover } from "@/services/handovers";
 import { useTranslation } from "@/i18n";
 import { useAudio } from "@/hooks/useAudio";
+import { getApiUrl } from "@/config/api";
 
 export default function ConfirmHandover() {
   const { t } = useTranslation();
@@ -29,12 +30,12 @@ export default function ConfirmHandover() {
       if (!localH) {
         setNetworkLoading(true);
         try {
-          const res = await fetch(`/api/v1/handovers/${id}`);
+          const res = await fetch(getApiUrl(`/handovers/${id}`));
           if (res.ok) {
             const data = await res.json();
             await db.handovers.put(data);
             if (data.lot_id) {
-              const lotRes = await fetch(`/api/v1/lots/${data.lot_id}`);
+              const lotRes = await fetch(getApiUrl(`/lots/${data.lot_id}`));
               if (lotRes.ok) {
                 const lotData = await lotRes.json();
                 await db.lots.put(lotData);
@@ -50,7 +51,7 @@ export default function ConfirmHandover() {
         const localL = await db.lots.get(localH.lot_id);
         if (!localL) {
           try {
-            const lotRes = await fetch(`/api/v1/lots/${localH.lot_id}`);
+            const lotRes = await fetch(getApiUrl(`/lots/${localH.lot_id}`));
             if (lotRes.ok) {
               const lotData = await lotRes.json();
               await db.lots.put(lotData);

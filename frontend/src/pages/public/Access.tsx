@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { User, Factory, ShieldCheck, ChevronRight, ArrowLeft, ExternalLink } from "lucide-react";
+import { PORTAL_BASE_URL } from "@/config/api";
 
 export default function Access() {
   const { t } = useTranslation();
@@ -78,7 +79,7 @@ export default function Access() {
             Recyclers manage yard weigh-ins, material verification, and payments via the dedicated <strong>SahiRate Web Portal</strong> (running on desktop/browser).
           </p>
           <a
-            href="http://localhost:5174/recycler"
+            href={`${PORTAL_BASE_URL}/recycler`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-copper hover:underline mt-1"
@@ -97,7 +98,7 @@ export default function Access() {
             Platform governance, verification approvals, fraud alerts, and audit logs are managed on the <strong>SahiRate Admin Web Portal</strong>.
           </p>
           <a
-            href="http://localhost:5174/admin"
+            href={`${PORTAL_BASE_URL}/admin`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:underline mt-1"

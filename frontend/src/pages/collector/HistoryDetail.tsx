@@ -9,6 +9,7 @@ import { db } from "@/db/dexie";
 import { useTranslation } from "@/i18n";
 import { calculateCriticalMinerals } from "@/utils/criticalMinerals";
 import { useSyncStore } from "@/stores/syncStore";
+import { getApiUrl } from "@/config/api";
 
 const RECYCLER_DIRECTORY: Record<string, { name: string; phone: string; location: string; hours: string }> = {
   "REC-MH-004": { name: "EcoRecycle Yard #4 (Nagpur Hub)", phone: "+91 98230 44102", location: "Plot B-14, Hingna MIDC, Nagpur", hours: "08:00 AM - 07:30 PM" },
@@ -39,7 +40,7 @@ export default function HistoryDetail() {
   useEffect(() => {
     if (!lotId || !isOnline) return;
     let isMounted = true;
-    fetch(`/api/v1/lots/${lotId}`)
+    fetch(getApiUrl(`/lots/${lotId}`))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (isMounted && data) {
@@ -75,7 +76,7 @@ export default function HistoryDetail() {
     setRespondingOffer(true);
     setOfferFeedback(null);
     try {
-      const res = await fetch(`/api/v1/lots/${lotId}/respond-offer`, {
+      const res = await fetch(getApiUrl(`/lots/${lotId}/respond-offer`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
 import { useCollectorAuthStore } from "@/stores/authStore";
 import { useSyncStore } from "@/stores/syncStore";
+import { getApiUrl } from "@/config/api";
 
 export default function CollectorRegister() {
   const { t, language } = useTranslation();
@@ -47,7 +48,7 @@ export default function CollectorRegister() {
 
     try {
       // Attempt backend registration
-      const res = await fetch("/api/v1/auth/register", {
+      const res = await fetch(getApiUrl("/auth/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

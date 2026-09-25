@@ -21,13 +21,14 @@ from sqlalchemy import text
 async def lifespan(app: FastAPI):
     # Startup: Ensure tables exist and seed demo data
     Base.metadata.create_all(bind=engine)
-    with engine.connect() as conn:
-        cols = [row[1] for row in conn.execute(text("PRAGMA table_info(users)"))]
-        if cols and "email" not in cols:
-            conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(100)"))
-        if cols and "location" not in cols:
-            conn.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR(150)"))
-        conn.commit()
+    if engine.dialect.name == "sqlite":
+        with engine.connect() as conn:
+            cols = [row[1] for row in conn.execute(text("PRAGMA table_info(users)"))]
+            if cols and "email" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(100)"))
+            if cols and "location" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR(150)"))
+            conn.commit()
 
     db = SessionLocal()
     try:
@@ -44,9 +45,10 @@ app = FastAPI(
 )
 
 # CORS Middleware
+origins = settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
