@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'sahirate_logo.png', 'favicon.svg'],
       manifest: {
         name: 'SahiRate',
         short_name: 'SahiRate',
@@ -19,14 +19,14 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: 'icon.svg',
-            sizes: '192x192 512x512',
-            type: 'image/svg+xml',
+            src: 'icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'icon-192.png',
-            sizes: '192x192',
+            src: 'sahirate_logo.png',
+            sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
@@ -34,6 +34,12 @@ export default defineConfig({
             src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
             purpose: 'any'
           }
         ]

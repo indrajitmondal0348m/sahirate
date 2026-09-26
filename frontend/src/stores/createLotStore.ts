@@ -128,7 +128,7 @@ export const useCreateLotStore = create<CreateLotState>()(
           estimated_value: totalValue,
           estimated_min: totalMin,
           estimated_max: totalMax,
-          asking_price: state.asking_price && state.asking_price > 0 ? state.asking_price : avgOffer,
+          asking_price: avgOffer,
         };
       }),
 

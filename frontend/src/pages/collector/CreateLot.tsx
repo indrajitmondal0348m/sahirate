@@ -846,9 +846,8 @@ function ConfirmStep() {
   const maxRange = estimated_max || Math.round((estimated_value || 0) * 1.07);
   const avgOffer = Math.round((minRange + maxRange) / 2);
 
-  const [customPrice, setCustomPrice] = useState<number>(
-    asking_price || avgOffer || estimated_value || 0
-  );
+  const [hasManuallyEdited, setHasManuallyEdited] = useState(false);
+  const [customPrice, setCustomPrice] = useState<number>(avgOffer);
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
 
@@ -861,15 +860,17 @@ function ConfirmStep() {
   }, [draft_id]);
 
   useEffect(() => {
-    const avg = Math.round((minRange + maxRange) / 2);
-    if (!asking_price && avg) {
-      setCustomPrice(avg);
-      setAskingPrice(avg);
+    if (!hasManuallyEdited && avgOffer > 0) {
+      setCustomPrice(avgOffer);
+      setAskingPrice(avgOffer);
     }
-  }, [minRange, maxRange, asking_price, setAskingPrice]);
+  }, [avgOffer, hasManuallyEdited, setAskingPrice]);
 
-  const handlePriceChange = (val: number) => {
+  const handlePriceChange = (val: number, isManual = true) => {
     const p = Math.max(0, Math.round(val));
+    if (isManual) {
+      setHasManuallyEdited(true);
+    }
     setCustomPrice(p);
     setAskingPrice(p);
   };
@@ -1084,7 +1085,10 @@ function ConfirmStep() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handlePriceChange(avgOffer)}
+                    onClick={() => {
+                      setHasManuallyEdited(false);
+                      handlePriceChange(avgOffer, false);
+                    }}
                     className="px-2.5 py-1.5 text-[11px] font-bold bg-white hover:bg-stone-100 text-stone-600 rounded-lg border border-[#DDD8CC] transition-colors"
                   >
                     Avg Default (₹{avgOffer.toLocaleString()})

@@ -13,7 +13,7 @@ export default function Logo({ className, imgClassName, showText = true }: LogoP
       <img
         src={logoImg}
         alt="SahiRate"
-        className={cn("h-7 w-7 object-contain rounded-md shrink-0", imgClassName)}
+        className={cn("h-8 w-8 object-contain rounded-md shrink-0", imgClassName)}
       />
       {showText && (
         <span className="font-bold tracking-tight inline-block leading-none">
