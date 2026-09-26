@@ -1,6 +1,9 @@
+import asyncio
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
@@ -15,28 +18,50 @@ from app.api.v1.payments import router as payments_router
 from app.api.v1.rates import router as rates_router
 from app.api.v1.admin import router as admin_router
 
-from sqlalchemy import text
+logger = logging.getLogger("uvicorn.error")
+
+def initialize_database():
+    """
+    Synchronous DB setup task executed in a background thread during startup.
+    This guarantees Uvicorn immediately binds to PORT (e.g. 8080) for Cloud Run
+    without waiting or hanging on network handshakes or slow DB poolers.
+    """
+    try:
+        logger.info("Starting background database initialization and schema setup...")
+        Base.metadata.create_all(bind=engine)
+
+        if engine.dialect.name == "sqlite":
+            with engine.connect() as conn:
+                cols = [row[1] for row in conn.execute(text("PRAGMA table_info(users)"))]
+                if cols and "email" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(100)"))
+                if cols and "location" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR(150)"))
+                conn.commit()
+
+        db = SessionLocal()
+        try:
+            seed_database(db)
+            logger.info("Database seeding completed.")
+        except Exception as seed_err:
+            logger.warning(f"Database seed skipped or non-fatal issue: {seed_err}")
+        finally:
+            db.close()
+
+        logger.info("Database initialization completed successfully.")
+    except Exception as e:
+        logger.error(f"Non-fatal error during background database setup: {e}", exc_info=True)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Ensure tables exist and seed demo data
-    Base.metadata.create_all(bind=engine)
-    if engine.dialect.name == "sqlite":
-        with engine.connect() as conn:
-            cols = [row[1] for row in conn.execute(text("PRAGMA table_info(users)"))]
-            if cols and "email" not in cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(100)"))
-            if cols and "location" not in cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR(150)"))
-            conn.commit()
-
-    db = SessionLocal()
-    try:
-        seed_database(db)
-    finally:
-        db.close()
+    # Non-blocking startup: Dispatch DB setup to a worker thread so Uvicorn
+    # can immediately bind to $PORT (e.g. 8080) and pass Cloud Run health checks
+    logger.info("FastAPI lifespan started: launching non-blocking DB initialization...")
+    asyncio.create_task(asyncio.to_thread(initialize_database))
     yield
     # Shutdown: Nothing to clean up
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -66,10 +91,18 @@ app.include_router(admin_router, prefix=api_v1_str)
 
 @app.get("/health")
 def health_check():
+    db_status = "connected"
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as e:
+        db_status = f"degraded: {str(e)}"
+        logger.warning(f"Health check DB probe notice: {e}")
+
     return {
         "status": "ok",
         "service": settings.PROJECT_NAME,
-        "database": "connected"
+        "database": db_status
     }
 
 @app.get("/")
