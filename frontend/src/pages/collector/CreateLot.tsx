@@ -164,6 +164,10 @@ function AiScanStep() {
     ? [primaryItem, ...otherItems.filter((o) => o.materialId !== primaryItem.materialId)]
     : [];
 
+  const manuallyAddedItems = items.filter(
+    (i) => !allDetected.some((d) => d.materialId.toUpperCase() === i.material_id.toUpperCase())
+  );
+
   const handleConfigureMaterial = (matId: string) => {
     setActiveItemMaterialId(matId);
     setMaterial(matId);
@@ -177,6 +181,93 @@ function AiScanStep() {
 
       {!previewUri ? (
         <div className="flex flex-col gap-4 w-full mt-2">
+          {items.length > 0 && (
+            <div className="bg-surface border-2 border-primary/30 rounded-2xl p-4 shadow-sm space-y-3 animate-in fade-in">
+              <div className="flex justify-between items-center border-b border-warm-borders pb-2">
+                <div>
+                  <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest">
+                    RECORDED SCRAP COMPONENTS
+                  </p>
+                  <span className="text-xs font-bold text-charcoal">
+                    {items.length} Component{items.length > 1 ? "s" : ""} Added
+                  </span>
+                </div>
+                <span className="text-xs font-black font-mono text-primary">
+                  ₹{(estimated_value || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {items.map((it, idx) => {
+                  const matMeta = MATERIALS.find((m) => m.id === it.material_id.toUpperCase());
+                  const MatIcon = matMeta?.icon;
+                  return (
+                    <div
+                      key={`manual-item-${idx}`}
+                      className="bg-white border-2 border-warm-borders rounded-xl p-3 flex items-center justify-between shadow-2xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black">
+                          {MatIcon ? <MatIcon className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <span className="font-extrabold text-sm text-charcoal uppercase">
+                            {it.label || t(`material.${it.material_id}` as any) || it.material_id}
+                          </span>
+                          <p className="text-xs font-bold text-emerald-800 font-mono mt-0.5">
+                            {it.weight_or_count} {it.unitLabel} • ₹{it.estimated_value.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleConfigureMaterial(it.material_id)}
+                          className="h-8 px-2.5 text-xs font-bold bg-white text-charcoal border-warm-borders hover:bg-stone-100"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeItem(it.material_id)}
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <Button
+                  size="lg"
+                  onClick={() => setStep("confirm")}
+                  className="w-full h-12 text-sm font-black bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                >
+                  <span>Proceed with {items.length} Item{items.length > 1 ? "s" : ""}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStep("material")}
+                  className="w-full h-10 border-dashed border-2 border-warm-borders text-xs font-bold text-primary flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Another Scrap Component</span>
+                </Button>
+              </div>
+            </div>
+          )}
+
           <Button
             size="lg"
             className="w-full h-32 bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-lg flex gap-3 active:scale-[0.98] transition-transform"
@@ -240,7 +331,7 @@ function AiScanStep() {
                     </span>
                   </div>
                   <span className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full text-[10px] font-black uppercase font-mono">
-                    {allDetected.length} Detected
+                    {allDetected.length} Detected{manuallyAddedItems.length > 0 ? ` • ${manuallyAddedItems.length} Manual` : ""}
                   </span>
                 </div>
 
@@ -341,6 +432,68 @@ function AiScanStep() {
                     );
                   })}
                 </div>
+
+                {/* Manually Added Items by Collector */}
+                {manuallyAddedItems.length > 0 && (
+                  <div className="pt-2 border-t border-dashed border-warm-borders space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-900 flex items-center gap-1">
+                        <Plus className="w-3 h-3 text-amber-700" /> Manually Added Scrap ({manuallyAddedItems.length})
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-medium">Custom components</span>
+                    </div>
+                    {manuallyAddedItems.map((itemDraft, idx) => {
+                      const matMeta = MATERIALS.find((m) => m.id === itemDraft.material_id.toUpperCase());
+                      const MatIcon = matMeta?.icon;
+                      return (
+                        <div
+                          key={`manual-${idx}`}
+                          className="bg-amber-50/80 border-2 border-amber-300 rounded-xl p-3 flex items-center justify-between shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-black">
+                              {MatIcon ? <MatIcon className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-sm text-charcoal uppercase">
+                                  {itemDraft.label || t(`material.${itemDraft.material_id}` as any) || itemDraft.material_id}
+                                </span>
+                                <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-black uppercase">
+                                  MANUAL
+                                </span>
+                              </div>
+                              <p className="text-xs font-bold text-amber-900 font-mono mt-0.5">
+                                {itemDraft.weight_or_count} {itemDraft.unitLabel} • ₹{itemDraft.estimated_value.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleConfigureMaterial(itemDraft.material_id)}
+                              className="h-8 px-2.5 text-xs font-bold bg-white text-amber-950 border-amber-300 hover:bg-amber-100"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeItem(itemDraft.material_id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Button to manually add any other component */}
                 <Button
@@ -517,6 +670,8 @@ function WeightStep() {
       weight_or_count: parsedWeight,
       unit: material.unit,
       unitLabel: unitLabel,
+      rate_min: material.min,
+      rate_max: material.max,
       estimated_value: estimatedValue,
     });
     // Return back to collection review screen
@@ -687,8 +842,12 @@ function ConfirmStep() {
   const { isOnline } = useSyncStore();
   const [saving, setSaving] = useState(false);
   const [savedLocally, setSavedLocally] = useState(false);
+  const minRange = estimated_min || Math.round((estimated_value || 0) * 0.94);
+  const maxRange = estimated_max || Math.round((estimated_value || 0) * 1.07);
+  const avgOffer = Math.round((minRange + maxRange) / 2);
+
   const [customPrice, setCustomPrice] = useState<number>(
-    asking_price || estimated_value || 0
+    asking_price || avgOffer || estimated_value || 0
   );
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -702,14 +861,12 @@ function ConfirmStep() {
   }, [draft_id]);
 
   useEffect(() => {
-    if (!asking_price && estimated_value) {
-      setCustomPrice(estimated_value);
-      setAskingPrice(estimated_value);
+    const avg = Math.round((minRange + maxRange) / 2);
+    if (!asking_price && avg) {
+      setCustomPrice(avg);
+      setAskingPrice(avg);
     }
-  }, [estimated_value, asking_price, setAskingPrice]);
-
-  const minRange = estimated_min || Math.round((estimated_value || 0) * 0.94);
-  const maxRange = estimated_max || Math.round((estimated_value || 0) * 1.07);
+  }, [minRange, maxRange, asking_price, setAskingPrice]);
 
   const handlePriceChange = (val: number) => {
     const p = Math.max(0, Math.round(val));
@@ -719,7 +876,7 @@ function ConfirmStep() {
 
   const handleFinish = async () => {
     setSaving(true);
-    const finalAsking = customPrice || asking_price || estimated_value || 0;
+    const finalAsking = customPrice || asking_price || avgOffer || estimated_value || 0;
     const finalMin = minRange;
     const finalMax = maxRange;
 
@@ -888,8 +1045,10 @@ function ConfirmStep() {
               <div className="pt-2 border-t border-warm-borders/60 space-y-2">
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-xs font-black uppercase text-charcoal block">Your Asking Price</span>
-                    <span className="text-[10px] text-muted-foreground">Type custom price or use buttons below</span>
+                    <span className="text-xs font-black uppercase text-charcoal block">Your Offer Price</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Defaulted to average fair benchmark (₹{avgOffer.toLocaleString()}). Custom editable:
+                    </span>
                   </div>
                 </div>
 
@@ -925,10 +1084,10 @@ function ConfirmStep() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handlePriceChange(estimated_value || 0)}
+                    onClick={() => handlePriceChange(avgOffer)}
                     className="px-2.5 py-1.5 text-[11px] font-bold bg-white hover:bg-stone-100 text-stone-600 rounded-lg border border-[#DDD8CC] transition-colors"
                   >
-                    Reset (₹{(estimated_value || 0).toLocaleString()})
+                    Avg Default (₹{avgOffer.toLocaleString()})
                   </button>
                   <button
                     type="button"

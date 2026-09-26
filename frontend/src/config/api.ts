@@ -26,8 +26,10 @@ export function getApiUrl(path: string): string {
 
 /**
  * External URL for Recycler & Admin Web Portal (frontendRA on Vercel).
- * Falls back to localhost:5174 in development.
+ * Default deployed admin portal: https://sahirate-ra.vercel.app
  */
 export const PORTAL_BASE_URL: string = (
-  (import.meta as any).env?.VITE_PORTAL_URL?.trim() || "http://localhost:5174"
+  (import.meta as any).env?.VITE_PORTAL_URL?.trim() || "https://sahirate-ra.vercel.app"
 ).replace(/\/+$/, "");
+
+export const ADMIN_PORTAL_URL: string = `${PORTAL_BASE_URL}/admin`;

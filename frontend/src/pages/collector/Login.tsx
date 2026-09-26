@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Mail, Lock, LogIn, ArrowLeft, Sparkles, CheckCircle2, ShieldCheck, MapPin } from "lucide-react";
+import { Mail, Lock, LogIn, ArrowLeft, Sparkles, CheckCircle2, ShieldCheck, MapPin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/i18n";
 import { useCollectorAuthStore } from "@/stores/authStore";
 import { useSyncStore } from "@/stores/syncStore";
 import { useCreateLotStore } from "@/stores/createLotStore";
-import { getApiUrl } from "@/config/api";
+import { getApiUrl, PORTAL_BASE_URL } from "@/config/api";
 
 export default function CollectorLogin() {
   const { t, language } = useTranslation();
@@ -260,6 +260,20 @@ export default function CollectorLogin() {
         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center text-[10px] text-emerald-800 font-medium flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           Works Offline: Credentials securely cached in device storage.
+        </div>
+
+        <div className="pt-2 border-t border-warm-borders text-center">
+          <p className="text-[11px] text-muted-foreground font-medium">
+            Looking for Yard Weigh-in or Administrator Access?
+          </p>
+          <a
+            href={PORTAL_BASE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 hover:text-amber-900 hover:underline mt-1"
+          >
+            Open Admin & Recycler Web Portal <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
       </div>
     </div>

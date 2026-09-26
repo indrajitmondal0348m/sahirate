@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Camera, FileText, ShieldAlert, ArrowRight, Sparkles, TrendingUp, MapPin, User } from "lucide-react";
+import { Camera, FileText, ShieldAlert, ArrowRight, Sparkles, TrendingUp, MapPin, User, ShieldCheck, ExternalLink } from "lucide-react";
 import { useCreateLotStore } from "@/stores/createLotStore";
 import { db } from "@/db/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -8,6 +8,7 @@ import { useTranslation } from "@/i18n";
 import { useCollectorAuthStore } from "@/stores/authStore";
 import SyncNetworkBar from "@/components/SyncNetworkBar";
 import { pullRemoteData } from "@/services/syncManager";
+import { PORTAL_BASE_URL } from "@/config/api";
 
 export default function CollectorHome() {
   const { t } = useTranslation();
@@ -214,6 +215,35 @@ export default function CollectorHome() {
             <p className="text-[9px] text-muted-foreground mt-0.5">PPE Protocol</p>
           </div>
         </Link>
+      </section>
+
+      {/* ADMIN & RECYCLER WEB PORTAL LINK */}
+      <section className="pt-1">
+        <a
+          href={PORTAL_BASE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="block backdrop-blur-md bg-white/90 border border-stone-200/80 p-3.5 rounded-2xl shadow-xs hover:border-primary/50 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-charcoal flex items-center gap-1 group-hover:text-primary transition-colors">
+                  Recycler & Admin Portal (Web) <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-primary" />
+                </h4>
+                <p className="text-[10px] text-muted-foreground font-medium">
+                  sahirate-ra.vercel.app • Real-time yard weigh-in & compliance
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
+              Open Portal
+            </span>
+          </div>
+        </a>
       </section>
 
     </div>

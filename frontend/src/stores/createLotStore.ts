@@ -119,6 +119,8 @@ export const useCreateLotStore = create<CreateLotState>()(
           ? (newItems[0].label || newItems[0].material_id)
           : newItems.map((i) => i.label || i.material_id).join(' + ');
 
+        const avgOffer = Math.round((totalMin + totalMax) / 2);
+
         return {
           items: newItems,
           material_id: lotLabel,
@@ -126,7 +128,7 @@ export const useCreateLotStore = create<CreateLotState>()(
           estimated_value: totalValue,
           estimated_min: totalMin,
           estimated_max: totalMax,
-          asking_price: state.asking_price && state.asking_price > 0 ? state.asking_price : totalValue,
+          asking_price: state.asking_price && state.asking_price > 0 ? state.asking_price : avgOffer,
         };
       }),
 
@@ -158,6 +160,8 @@ export const useCreateLotStore = create<CreateLotState>()(
           ? (newItems.length === 1 ? (newItems[0].label || newItems[0].material_id) : newItems.map((i) => i.label || i.material_id).join(' + '))
           : null;
 
+        const avgOffer = Math.round((totalMin + totalMax) / 2);
+
         return {
           items: newItems,
           material_id: lotLabel,
@@ -165,28 +169,38 @@ export const useCreateLotStore = create<CreateLotState>()(
           estimated_value: totalValue,
           estimated_min: totalMin,
           estimated_max: totalMax,
-          asking_price: totalValue,
+          asking_price: avgOffer,
         };
       }),
 
-      setWeight: (weight, value) => set((state) => ({
-        approx_weight_kg: weight,
-        estimated_value: value,
-        estimated_min: Math.round(value * 0.94),
-        estimated_max: Math.round(value * 1.07),
-        asking_price: value,
-        step: 'confirm',
-        history: [...state.history, state.step],
-      })),
+      setWeight: (weight, value) => {
+        const minVal = Math.round(value * 0.94);
+        const maxVal = Math.round(value * 1.07);
+        const avgOffer = Math.round((minVal + maxVal) / 2);
+        return set((state) => ({
+          approx_weight_kg: weight,
+          estimated_value: value,
+          estimated_min: minVal,
+          estimated_max: maxVal,
+          asking_price: avgOffer,
+          step: 'confirm',
+          history: [...state.history, state.step],
+        }));
+      },
 
-      setEstimatedValue: (value) => set((state) => ({
-        estimated_value: value,
-        estimated_min: Math.round(value * 0.94),
-        estimated_max: Math.round(value * 1.07),
-        asking_price: state.asking_price || value,
-        step: 'confirm',
-        history: [...state.history, state.step],
-      })),
+      setEstimatedValue: (value) => {
+        const minVal = Math.round(value * 0.94);
+        const maxVal = Math.round(value * 1.07);
+        const avgOffer = Math.round((minVal + maxVal) / 2);
+        return set((state) => ({
+          estimated_value: value,
+          estimated_min: minVal,
+          estimated_max: maxVal,
+          asking_price: state.asking_price || avgOffer,
+          step: 'confirm',
+          history: [...state.history, state.step],
+        }));
+      },
 
       setAskingPrice: (price) => set({ asking_price: price }),
 
