@@ -78,6 +78,7 @@ export default function Access() {
           <p className="text-xs leading-relaxed">
             Recyclers manage yard weigh-ins, material verification, and payments via the dedicated <strong>SahiRate Web Portal</strong> (running on desktop/browser).
           </p>
+          {/* THis here link corrreted but staged not */}
           <a
             href={PORTAL_BASE_URL}
             target="_blank"
