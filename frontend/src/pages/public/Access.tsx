@@ -79,7 +79,7 @@ export default function Access() {
             Recyclers manage yard weigh-ins, material verification, and payments via the dedicated <strong>SahiRate Web Portal</strong> (running on desktop/browser).
           </p>
           <a
-            href={`${PORTAL_BASE_URL}/recycler`}
+            href={PORTAL_BASE_URL}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-copper hover:underline mt-1"
@@ -98,7 +98,7 @@ export default function Access() {
             Platform governance, verification approvals, fraud alerts, and audit logs are managed on the <strong>SahiRate Admin Web Portal</strong>.
           </p>
           <a
-            href={`${PORTAL_BASE_URL}/admin`}
+            href={PORTAL_BASE_URL}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:underline mt-1"
