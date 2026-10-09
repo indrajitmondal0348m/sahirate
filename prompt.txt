@@ -1,0 +1,27 @@
+before enancement : 
+
+Hey, we are building our  Hackathon project "SahiRate" for the problem statement " Kabadiwala Connect ". 
+
+We need to build a functional prototype covering the two core user sides:
+1. The Informal Collector Mobile Web App (PWA, mobile-friendly, low-literacy & vernacular friendly, offline-first)
+2. The Authorized Recycler Yard Portal (clean desktop web dashboard for formal scrap yards)
+
+Here are the exact requirements to build:
+
+We are building a professional, high-impact Hackathon project called SahiRate, 
+an AI-powered scrap identification and fair-pricing platform that connects informal scrap collectors with authorized formal recycling yards.
+We want to skip basic mockups and build a robust, end-to-end working prototype that features a clean, warm/glassy copper-orange accent UI and strict, bulletproof security.
+Please scaffold and implement this systematically starting with a solid backend, database, and local AI setup.
+The backend should use Python FastAPI with SQLAlchemy (supporting SQLite for instant local dev and PostgreSQL for production scaling), 
+complete with JWT authentication, role-based controls, an explainable pricing engine, Scikit-Learn Isolation Forest anomaly detection for suspicious handovers, 
+and a tamper-evident SHA-256 digital audit trail. For the AI core, instead of calling expensive cloud APIs, we want the system optimized for entry-level Android devices: 
+prepare a lightweight YOLO object-detection model exported to ONNX format with clear class mappings to detect multiple scrap types (like Plastic casings, Display panels, and PCBs) in a single image, 
+keeping material-composition estimation (like Neodymium, Tantalum, Gold, Lithium, Cobalt, and Indium yields) as a separate, scientifically grounded math layer.
+On the frontend, build a fully connected, highly responsive React + TypeScript + Vite + Tailwind CSS application with two core views. First, a mobile-first, \
+low-literacy and vernacular-friendly (English, Hindi, Marathi) Informal Collector PWA (/collector) that runs the .onnx model locally via ONNX Runtime Web, handles multi-item lot creation workflows, logs composite weights, and uses Dexie.js (IndexedDB) alongside service workers for an ironclad, offline-first experience. Include a manual 'Turn Sync OFF/ON' toggle bar so we can explicitly demonstrate offline queueing and subsequent seamless synchronization to judges using UUID-based idempotency to eliminate duplicate records. Second, an Authorized Recycler Portal (/recycler) featuring a clean desktop dashboard with a strict auth guard, real-time incoming lot feeds displaying critical mineral content/hazard avoided badges, filter tabs, and a verified weighment handover screen to finalize digital transactions. To make this immediate and evaluator-friendly, add '1-Click Auto-Fill Demo' credential buttons on both login screens. 
+Let’s tackle this phase-by-phase, ensuring all components, sample data pipelines, and frontend hooks are fully wired together right out of the box
+
+
+
+
+
