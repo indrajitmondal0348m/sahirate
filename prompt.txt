@@ -6,6 +6,8 @@ We need to build a functional prototype covering the two core user sides:
 1. The Informal Collector Mobile Web App (PWA, mobile-friendly, low-literacy & vernacular friendly, offline-first)
 2. The Authorized Recycler Yard Portal (clean desktop web dashboard for formal scrap yards)
 
+use tech python fastapi , react , sqllite in the user browser  , mysql 
+
 Here are the exact requirements to build:
 
 We are building a professional, high-impact Hackathon project called SahiRate, 
